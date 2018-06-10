@@ -139,16 +139,16 @@ end
 
 %H
 if k==1
-    H2= 12 * (x1 - xh(1)) + theta21* transpose(phi2) - dalpha1dxh *xhdot(1) - dtheta11 * dalpha1dtheta - dalpha1dyr * yrd - dalpha1dx *(xh(2)+theta11*transpose(phi1));
+    H2= 12 * (x1 - xh(1)) + theta21* transpose(phi2) - dalpha1dxh *xhdot(1) - dtheta11 * dalpha1dtheta - dalpha1dyr * yr - dalpha1dx *(xh(2)+theta11*transpose(phi1));
     disp(H2);
     v=(1/mh(1)) * (-20*z(2) - z(2) - 2 * (dalpha1dx ^2) * z(2)- sign(z(2)) * hh(1) - H2);
     hhdot(1)= 0.1 * abs(z(2)) - 0.5 * hh(1);
     hhdot(2)= 0;
     %mhdot
     mhdot(2)=0;
-    if abs(mh(1)) < 4 || (abs(mh(1)) == 4 && mh(1) * z(2) * v <=0 )
+    if abs(mh(1)) < 4 || (abs(mh(1)) == 4 && mh(1) * z(2) * v <=0 ) %mh1 second condition should be error
         mhdot(1)= 0.01*z(2)-0.5*mh(1);
-    elseif abs(mh(1))==4 && mh(1)*z(2)*v>0
+    elseif abs(mh(1))==4 && mh(1)*z(2)*v>0 %mh1 second condition should be error
         mhdot(1)= 0.01*z(2)-0.5*mh(1)- (0.1*mh(1)*z(2)*v*mh(1))/(abs(mh(1))^2);
     end
     u(1) = mh(1) * v + hh(1);
@@ -159,9 +159,9 @@ elseif k==2
     hhdot(1)= 0;
     hhdot(2)= 0.1 * abs(z(2)) - 0.5 * hh(2);
     mhdot(1)=0;
-    if abs(mh(2)) < 4 || (abs(mh(2)) == 4 && mh(2) * z(2) * v <=0 )
+    if abs(mh(2)) < 4 || (abs(mh(2)) == 4 && mh(2) * z(2) * v <=0 ) %mh2 second condition should be error
         mhdot(2)= 0.01*z(2)-0.5*mh(2);
-    elseif abs(mh(2))==4 && mh(2)*z(2)*v(2)>0
+    elseif abs(mh(2))==4 && mh(2)*z(2)*v>0 %mh2 second condition should be error
         mhdot(2)= 0.01*z(2)-0.5*mh(2)- (0.1*mh(2)*z(2)*v*mh(2))/(abs(mh(2))^2);
     end
     u(2) = mh(2) * v + hh(2);
