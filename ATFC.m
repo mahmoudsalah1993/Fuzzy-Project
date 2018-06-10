@@ -21,6 +21,7 @@ for i = 24:28
 end
 t = w(29);
 %generate k
+k=1;
 if t>=0 && t<5
     k=1;
 elseif t>=5 && t<15
@@ -53,7 +54,7 @@ elseif t>=135 && t<150
     k=1;
 end;
 for L=1:5
-    mu1(L)= exp(-(xh(1) - 3 + L)^2/2);
+    mu1(L)= exp((-(xh(1) - 3 + L)^2)/2);
 end
 %phi1 , phi2
 s=0;
@@ -64,7 +65,7 @@ for L=1:5
     phi1(L)=mu1(L)/s;
 end
 for L=1:5
-    mu2(L)=exp(-(xh(1) - 3 + L)^2/2)*exp(-(xh(2) - 3 + L)^2/2);
+    mu2(L)=exp((-(xh(1) - 3 + L)^2)/2)*exp((-(xh(2) - 3 + L)^2)/2);
 end
 d= 0;
 for n=1:5
@@ -95,21 +96,21 @@ dalpha1dx= -3;
 dalpha1dtheta=-transpose(phi1);
 dalpha1dyr=3;
 
-syms x ncount;
+%syms x ncount;
 
 %dphi
-for L=1:5
-    dphix = diff(exp(-(x - 3 + L)^2/2)/symsum(exp(-(x - 3 + ncount)^2/2), ncount, 1, 5));
-    dphi1(L)= subs(dphix,xh(1));
-end
-
-%N = exp(-(xh(1) - 2 )^2/2) + exp(-(xh(1) - 1 )^2/2) + exp(-(xh(1))^2/2) + exp(-(xh(1) + 1 )^2/2) + exp(-(xh(1) + 2 )^2/2);
-%ND = -(xh(1) - 2 ) * exp(-(xh(1) - 2 )^2/2) -(xh(1) - 1 ) * exp(-(xh(1) - 1 )^2/2) -(xh(1)) * exp(-(xh(1))^2/2) -(xh(1) + 1 ) * exp(-(xh(1) + 1 )^2/2) -(xh(1) + 2 ) * exp(-(xh(1) + 2 )^2/2);
 %for L=1:5
-%    D= exp(-(xh(1) - 3 + L)^2/2);
-%    DD = -(xh(1) - 3 + L) * D;
-%    dphi1(L) = (N * DD - D * ND)/(N^2);
+%    dphix = diff(exp(-(x - 3 + L)^2/2)/symsum(exp(-(x - 3 + ncount)^2/2), ncount, 1, 5));
+%    dphi1(L)= subs(dphix,xh(1));
 %end
+
+N = exp(-(xh(1) - 2 )^2/2) + exp(-(xh(1) - 1 )^2/2) + exp(-(xh(1))^2/2) + exp(-(xh(1) + 1 )^2/2) + exp(-(xh(1) + 2 )^2/2);
+ND = -(xh(1) - 2 ) * exp(-(xh(1) - 2 )^2/2) -(xh(1) - 1 ) * exp(-(xh(1) - 1 )^2/2) -(xh(1)) * exp(-(xh(1))^2/2) -(xh(1) + 1 ) * exp(-(xh(1) + 1 )^2/2) -(xh(1) + 2 ) * exp(-(xh(1) + 2 )^2/2);
+for L=1:5
+    D= exp(-(xh(1) - 3 + L)^2/2);
+    DD = -(xh(1) - 3 + L) * D;
+    dphi1(L) = (N * DD - D * ND)/(N^2);
+end
 %disp(dphi1);
 
 %dalphadhx
@@ -146,26 +147,45 @@ if k==1
     hhdot(2)= 0;
     %mhdot
     mhdot(2)=0;
-    if abs(mh(1)) < 4 || (abs(mh(1)) == 4 && mh(1) * z(2) * v <=0 ) %mh1 second condition should be error
-        mhdot(1)= 0.01*z(2)-0.5*mh(1);
-    elseif abs(mh(1))==4 && mh(1)*z(2)*v>0 %mh1 second condition should be error
-        mhdot(1)= 0.01*z(2)-0.5*mh(1)- (0.1*mh(1)*z(2)*v*mh(1))/(abs(mh(1))^2);
-    end
     u(1) = mh(1) * v + hh(1);
     u(2)=0;
+    m2 = 0;
+    if v >= 0.1
+        m1 = u(1) / (v - 0.1);
+    elseif v <= -0.5 
+        m1 = u(1) / (v + 0.3);
+    elseif v > -0.5 && v < 0.1;
+        m1 = 0;
+    end
+    mTelda1 = m1 - mh(1);
+    if abs(mh(1)) < 4 || (abs(mh(1)) == 4 && mTelda1 * z(2) * v <=0 ) %mh1 second condition should be error
+        mhdot(1)= 0.01*z(2)-0.5*mh(1);
+    elseif abs(mh(1))==4 && mTelda1*z(2)*v>0 %mh1 second condition should be error
+        mhdot(1)= 0.01*z(2)-0.5*mh(1)- (0.1*mh(1)*z(2)*v*mh(1))/(abs(mh(1))^2);
+    end
 elseif k==2
     H2= 12 * (x1 - xh(1)) + theta22 *transpose(phi2) - dalpha1dxh * xhdot(1) -  dtheta12 * dalpha1dtheta - dalpha1dyr * yrd - dalpha1dx *(xh(2)+theta12*transpose(phi1));    
     v=(1/mh(2)) * (-20*z(2) - z(2) - 2 * (dalpha1dx) ^2 * z(2)- sign(z(2)) * hh(2) - H2);
     hhdot(1)= 0;
     hhdot(2)= 0.1 * abs(z(2)) - 0.5 * hh(2);
     mhdot(1)=0;
-    if abs(mh(2)) < 4 || (abs(mh(2)) == 4 && mh(2) * z(2) * v <=0 ) %mh2 second condition should be error
-        mhdot(2)= 0.01*z(2)-0.5*mh(2);
-    elseif abs(mh(2))==4 && mh(2)*z(2)*v>0 %mh2 second condition should be error
-        mhdot(2)= 0.01*z(2)-0.5*mh(2)- (0.1*mh(2)*z(2)*v*mh(2))/(abs(mh(2))^2);
-    end
     u(2) = mh(2) * v + hh(2);
     u(1)=0;
+    m1 = 0;
+    if v >= 0.3;
+        m2 = u(2) / (v - 0.3);
+    elseif v <= -2.5
+        m2 = u(1) / (v + 2.5);
+    elseif v > -2.5 && v < 0.3;
+        m2 = 0;
+    end
+    mTelda2 = m2 - mh(2);
+    
+    if abs(mh(2)) < 4 || (abs(mh(2)) == 4 && mTelda2 * z(2) * v <=0 ) %mh2 second condition should be error
+        mhdot(2)= 0.01*z(2)-0.5*mh(2);
+    elseif abs(mh(2))==4 && mTelda2*z(2)*v>0 %mh2 second condition should be error
+        mhdot(2)= 0.01*z(2)-0.5*mh(2)- (0.1*mh(2)*z(2)*v*mh(2))/(abs(mh(2))^2);
+    end
 end
 
 %xdot and xhdot2
